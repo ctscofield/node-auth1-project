@@ -6,6 +6,8 @@
     "message": "You shall not pass!"
   }
 */
+const User = require("./../users/users-model")
+
 function restricted(req, res, next) {
   if (req.session.user) {
     next()
@@ -25,11 +27,19 @@ function restricted(req, res, next) {
     "message": "Username taken"
   }
 */
-function checkUsernameFree(username) {
-  if (!username.unique()) {
-    res.status(422).json({
-      message: "Username taken"
-    })
+async function checkUsernameFree(req, res, next) {
+  try {
+    const users = await User.findBy({ username: req.body.username })
+    if (!users.length) {
+      next()
+    } else {
+      next({
+        message: "Username taken",
+        status: 422
+      })
+    }
+  } catch (err) {
+    next(err)
   }
 }
 
@@ -41,12 +51,22 @@ function checkUsernameFree(username) {
     "message": "Invalid credentials"
   }
 */
-function checkUsernameExists(username) {
-  if (username === undefined || username === null) {
-    return res.status(401).json({
-      message: "Invalid credentials"
-    })
+async function checkUsernameExists(req, res, next) {
+  try {
+    const users = await User.findBy({ username: req.body.username})
+    if (users.length) {
+      next()
+    } else {
+      next({ message: "Invalid credentials", status: 401 })
+    }
+  } catch (err) {
+    next(err)
   }
+  // if (username === undefined || username === null) {
+  //   return res.status(401).json({
+  //     message: "Invalid credentials"
+  //   })
+  // }
 }
 
 /*
@@ -57,12 +77,20 @@ function checkUsernameExists(username) {
     "message": "Password must be longer than 3 chars"
   }
 */
-function checkPasswordLength(password) {
-  if (!password || password.value.length <= 3) {
-    res.status(422).json({
-      message: "Password must be longer than 3 chars"
-    })
+function checkPasswordLength(req, res, next) {
+  if (!req.body.password || req.body.password <= 3) {
+    next({
+      message: "Password must be longer than 3 chars",
+      status: 422
+  })
+  } else {
+    next()
   }
+  // if (!password || password.value.length <= 3) {
+  //   res.status(422).json({
+  //     message: "Password must be longer than 3 chars"
+  //   })
+  // }
 }
 
 // Don't forget to add these to the `exports` object so they can be required in other modules
