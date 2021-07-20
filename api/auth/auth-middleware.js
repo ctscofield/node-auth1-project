@@ -6,7 +6,7 @@
     "message": "You shall not pass!"
   }
 */
-const User = require("./../users/users-model")
+const User = require("../users/users-model")
 
 function restricted(req, res, next) {
   if (req.session.user) {
