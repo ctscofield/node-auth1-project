@@ -6,9 +6,12 @@
     "message": "You shall not pass!"
   }
 */
-function restricted(session) {
-  if (!session) {
-    res.status(401).json({
+function restricted(req, res, next) {
+  if (req.session.user) {
+    next()
+  } else {
+    next({
+      status: 401,
       message: "You shall not pass!"
     })
   }
